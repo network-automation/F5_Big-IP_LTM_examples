@@ -11,6 +11,8 @@
   - name: Collect BIG-IP facts
     bigip_facts:
       server: "{{ lb_server }}"
+#      user: admin
+#      password: admin
       include: "pool"
       filter: "{{ poolserver }}"
       validate_certs: no
@@ -36,6 +38,8 @@
   - name: Collect BIG-IP facts
     bigip_facts:
       server: "{{ lb_server }}"
+#      user: admin
+#      password: admin
       include: "pool"
       filter: "{{ poolserver }}"
       validate_certs: no
@@ -45,6 +49,8 @@
   - name: Disable node pool member
     bigip_node:
       server: "{{ lb_server }}"
+#      user: admin
+#      password: admin
       state: "disabled"
       name: "{{ inventory_hostname }}"
       validate_certs: no
@@ -61,6 +67,8 @@
   - name: Enable node pool member
     bigip_node:
       server: "{{ lb_server }}"
+#      user: admin
+#      password: admin
       state: "enabled"
       name: "{{ inventory_hostname }}"
       validate_certs: no
