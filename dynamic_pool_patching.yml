@@ -1,0 +1,67 @@
+---
+- hosts: all
+  gather_facts: no
+  connection: local
+  vars:
+    pool_path: "/Common/{{ poolserver }}"
+    lb_server: "192.168.1.89"
+    poolserver: "webservers"
+
+  tasks:
+  - name: Collect BIG-IP facts
+    bigip_facts:
+      server: "{{ lb_server }}"
+      include: "pool"
+      filter: "{{ poolserver }}"
+      validate_certs: no
+    register: "poolmembers"
+
+  - name: set member facts
+    set_fact:
+      members: "{{ ansible_facts.pool[pool_path].member }}"
+
+  - name: add hosts from member addresses
+    add_host:
+      name: "{{item.address | regex_replace('/Common/(.+)', '\\1')}}"
+      groups: "webservers"
+    loop: "{{members}}"
+
+- hosts: webservers
+  gather_facts: no
+  serial: 1
+  vars:
+    pool_path: "/Common/{{ poolserver }}"
+
+  tasks:
+  - name: Collect BIG-IP facts
+    bigip_facts:
+      server: "{{ lb_server }}"
+      include: "pool"
+      filter: "{{ poolserver }}"
+      validate_certs: no
+    delegate_to: localhost
+    register: "poolmembers"
+
+  - name: Disable node pool member
+    bigip_node:
+      server: "{{ lb_server }}"
+      state: "disabled"
+      name: "{{ inventory_hostname }}"
+      validate_certs: no
+    delegate_to: localhost
+    failed_when: ansible_facts.pool[pool_path].active_member_count <= 1
+
+  - name: Patch the system
+    yum:
+      name: yum
+      state: latest
+    delegate_to: "{{ inventory_hostname }}"
+    ignore_errors: yes
+
+  - name: Enable node pool member
+    bigip_node:
+      server: "{{ lb_server }}"
+      state: "enabled"
+      name: "{{ inventory_hostname }}"
+      validate_certs: no
+    delegate_to: localhost
