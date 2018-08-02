@@ -11,6 +11,7 @@
   - name: Collect BIG-IP facts
     bigip_facts:
       server: "{{ lb_server }}"
+      server_port: "443"
 #      user: admin
 #      password: admin
       include: "pool"
@@ -38,6 +39,7 @@
   - name: Collect BIG-IP facts
     bigip_facts:
       server: "{{ lb_server }}"
+      server_port: "443"
 #      user: admin
 #      password: admin
       include: "pool"
